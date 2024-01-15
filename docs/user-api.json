@@ -1,9 +1,3 @@
-# RESTful API by <a href="">Programmer Zaman Now</a>
-Buat case sederhana yaitu Contact Management dengan fitur User Management, Contact Management, Address Management
-
-### Buat API Spec
-#### User API Spec
-```
 {
     "openapi" : "3.0.3",
     "info" : {
@@ -311,4 +305,3 @@ Buat case sederhana yaitu Contact Management dengan fitur User Management, Conta
         }
     }
 }
-```
