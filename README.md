@@ -1,7 +1,7 @@
 # RESTful API by <a href="">Programmer Zaman Now</a>
 Buat case sederhana yaitu Contact Management dengan fitur User Management, Contact Management, Address Management
 
-### Buat API Spec
+### 1. Buat API Spec
 
 buat folder docs/{file}-api.json
 
@@ -316,7 +316,7 @@ buat folder docs/{file}-api.json
 }
 ```
 
-### Contact API Spec
+#### Contact API Spec
 ```
 {
     "openapi" : "3.0.3",
@@ -638,7 +638,7 @@ buat folder docs/{file}-api.json
 }
 ```
 
-### Address API Spec
+#### Address API Spec
 ```
 {
     "openapi": "3.0.3",
@@ -973,4 +973,70 @@ buat folder docs/{file}-api.json
         }
     }
 }
+```
+
+### 2. Setup database
+untuk lebih memahami cara kerja otentication, maka buat secara manual. maka dari itu hapus file yang ada di file migration, dan model bawaan laravel
+#### buat model user, contact, address
+```
+php artisan make:model User -m -s
+```
+
+```
+php artisan make:model Contact -m -s
+```
+
+```
+php artisan make:model Address -m -s
+```
+
+Schema tabel user
+```
+public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string("username", 100)->unique();
+            $table->string("password", 100);
+            $table->string("name", 100);
+            $table->timestamps();
+        });
+    }
+```
+
+Schema tabel contact
+```
+public function up(): void
+    {
+        Schema::create('contacts', function (Blueprint $table) {
+            $table->id();
+            $table->string("first_name", 100);
+            $table->string("last_name", 100)->nullable();
+            $table->string("email", 200)->nullable();
+            $table->string("phone", 20)->nullable();
+            $table->unsignedBigInteger("user_id")->nullable();
+            $table->timestamps();
+
+            $table->foreign("user_id")->on("users")->references("id");
+        });
+    }
+```
+
+Schema tabel addresses
+```
+public function up(): void
+    {
+        Schema::create('addresses', function (Blueprint $table) {
+            $table->id();
+            $table->string("street", 200)->nullable();
+            $table->string("city", 100)->nullable();
+            $table->string("province", 100)->nullable();
+            $table->string("country", 100);
+            $table->string("postal_code", 10)->nullable();
+            $table->unsignedBigInteger("contact_id");
+            $table->timestamps();
+
+            $table->foreign("contact_id")->on("contacts")->references("id");
+        });
+    }
 ```
