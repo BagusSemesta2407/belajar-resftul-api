@@ -10,6 +10,10 @@ class User extends Model
 {
     use HasFactory;
 
+    protected $guarded = [
+        'id'
+    ];
+
     /**
      * Get all of the contact for the User
      *

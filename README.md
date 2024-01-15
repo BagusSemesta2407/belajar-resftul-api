@@ -1040,3 +1040,144 @@ public function up(): void
         });
     }
 ```
+
+### 3. Register User API
+buat file request untuk register user
+```
+php artisan make:request UserRegisterRequest
+```
+
+buat resource untuk user
+```
+php artisan make:resource UserResource
+```
+
+buat UserController
+```
+php artisan make:controller UserController
+```
+
+#### File UserRegisterRequest
+ubah method authorize menjadi true
+
+```
+public function authorize(): bool
+    {
+        return true;
+    }
+```
+
+kemudian tambahkan rules sesuai dengan file json yang sudah dibuat sebelumnya.
+
+```
+public function rules(): array
+    {
+        return [
+            'username' =>  ['required', 'max:100'],
+            'password' =>  ['required', 'max:100'],
+            'name' =>  ['required', 'max:100'],
+        ];
+    }
+```
+
+ketika terjadi error maka laravel akan melakukan throw ValidationException. Pada case ini, error yang di hasilkan yaitu dalam bentuk Http Response.
+
+```
+protected function failedValidation(Validator $validator)
+    {
+        // parent::failedValidation($validator);
+
+        throw new HttpResponseException(response([
+                "errors" => $validator->getMessageBag()
+        ], 400));   
+    }
+```
+
+#### File UserResource
+karena output nya berupa json maka dibutuhkan file resource
+
+tambahkan atribut id, username, name pada return method toArray
+
+```
+public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'name' => $this->name
+        ];
+    }
+```
+
+#### File UserController
+
+```
+public function register(UserRegisterRequest $request): JsonResponse
+    {
+        $data=$request->validated();
+
+        if (User::where('username', $data['username'])->count() == 1) {
+            throw new HttpResponseException(response([
+                "errors" => [
+                    "username" => [
+                        "username already registered"
+                    ]
+                ]
+            ], 400));
+        }
+
+        $user= new User($data);
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+
+        return (new UserResource($user))->response()->setStatusCode(201);
+    }
+```
+#### Buka file routes/api.php
+
+```
+Route::post("/users", [UserController::class, 'register']);
+```
+
+### Impelementasimenggunakan unit test
+
+```
+php artisan make:test UserTest
+```
+#### buka file TestCase
+
+```
+protected function setUp(): void
+    {
+        parent::setUp();
+
+        DB::delete("delete from addresses");
+        DB::delete("delete from contacts");
+        DB::delete("delete from users");
+    }
+```
+
+#### file UserTest
+
+```
+public function testRegisterSuccess()
+    {
+        $this->post('/api/users', [
+            'username' => 'bagus',
+            'password' => 'password',
+            'name' => 'Bagus Semesta'
+        ])->assertStatus(201)
+        ->assertJson([
+            "data" => [
+                'username' => 'bagus',
+                'name' => 'Bagus Semesta'
+            ]
+        ]);
+    }
+```
+
+#### Run Test
+```
+php artisan test
+```
